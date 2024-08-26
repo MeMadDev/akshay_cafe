@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previous Bills - Cafe Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #343a40;
+            color: white;
+        }
+        .billing-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .billing-container h2 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand">
+            <img src="{% static 'logo.jpeg' %}" alt="Cafe Logo"  onclick="window.location.href='{% url 'home' %}'" height="40">
+        </a>
+        <div class="ml-auto">
+            <button class="btn btn-success ml-2" onclick="window.location.href='{% url 'create_bill' %}'">Billing</button>
+            <button class="btn btn-danger ml-2" onclick="window.location.href='{% url 'logout' %}'">Logout</button>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="billing-container">
+            <h2 class="text-center">Previous Bills</h2>
+            <form method="GET" action="{% url 'previous_bills' %}">
+                <div class="form-group">
+                    <label for="search">Search by Customer Name:</label>
+                    <input type="text" id="search" name="search" class="form-control" placeholder="Search by name...">
+                </div>
+                <div class="form-group">
+                    <label for="search_date">Search by Date:</label>
+                    <input type="date" id="search_date" name="search_date" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-secondary">Search</button>
+            </form>
+            <hr>
+            <ul class="list-group mt-3">
+                {% for bill in bills %}
+                    <li class="list-group-item">
+                        <strong>{{ bill.customer_name }}</strong> - {{ bill.total_amount }} 
+                        <br>
+                        <small>{{ bill.date_created|date:"M d, Y" }}</small>
+                        <button class="btn btn-link p-0" type="button" data-toggle="collapse" data-target="#billDetails{{ bill.id }}" aria-expanded="false" aria-controls="billDetails{{ bill.id }}">
+                            View Details
+                        </button>
+                        <div class="collapse" id="billDetails{{ bill.id }}">
+                            <hr>
+                            <ul class="list-group">
+                                {% for item in bill.bill_items.all %}
+                                    <li class="list-group-item">
+                                        {{ item.quantity }} x {{ item.item.name }} - {{ item.get_item_total }}
+                                    </li>
+                                {% endfor %}
+                                {% if bill.extra_amount != 0 %}
+                                <li class="list-group-item">
+                                    Extra Amount:- {{ bill.extra_amount}} <br>
+                                    Note:- {{ bill.extra_items }}
+                                </li>
+                                {%endif%}
+                                <li class="list-group-item list-group-item-info">
+                                    <strong>Total: {{ bill.total_amount }}</strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No bills found.</li>
+                {% endfor %}
+            </ul>
+            <!-- Pagination controls -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mt-4">
+                    {% if bills.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ bills.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.search_date %}&search_date={{ request.GET.search_date }}{% endif %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for num in bills.paginator.page_range %}
+                        <li class="page-item {% if bills.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.search_date %}&search_date={{ request.GET.search_date }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if bills.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ bills.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.search_date %}&search_date={{ request.GET.search_date }}{% endif %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Cafe Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Prevents scrolling on the body */
+        }
+        .navbar {
+            background-color: #343a40;
+            color: white;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            padding-top: 20px;
+            position: fixed;
+            top: 56px; /* Height of the navbar */
+            left: 0;
+            width: 250px;
+            overflow-y: auto;
+            z-index: 900;
+        }
+        .sidebar a {
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .main-content {
+            margin-left: 250px; /* Same as the sidebar width */
+            margin-top: 56px; /* Same as the navbar height */
+            padding: 20px;
+            height: calc(100vh - 56px); /* Full height minus the navbar */
+            overflow-y: auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand">
+            <img src="{% static 'logo.jpeg' %}" alt="Cafe Logo" onclick="window.location.href='{% url 'home' %}'" height="40">
+        </a>
+        <div class="ml-auto">
+            <button class="btn btn-primary ml-2" onclick="window.location.href='{% url 'previous_bills' %}'">Bills</button>
+            <button class="btn btn-success ml-2" onclick="window.location.href='{% url 'create_bill' %}'">Billing</button>
+            <button class="btn btn-danger ml-2" onclick="window.location.href='{% url 'logout' %}'">Logout</button>
+        </div>
+    </nav>
+    <div class="sidebar">
+        {% for category in categories %}
+            <a href="?category={{ category.id }}">{{ category.name }}</a>
+        {% endfor %}
+    </div>
+    <div class="main-content">
+        <h3>{{ selected_category_name }}</h3>
+        {% if items %}
+            <div class="row">
+                {% for item in items %}
+                    <div class="col-md-4">
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ item.name }}</h5>
+                                <p class="card-text">Price: Rs {{ item.price }}</p>
+                                {% if item.inventory_managed %}
+                                    <p>Stock: {{ item.stock_quantity }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No items available for this category.</p>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% for category, items in items_by_category.items %}
+                <h4>{{ category.name }}</h4>
+                <div class="row">
+                    {% for item in items %}
+                        <div class="col-md-4">
+                            <div class="card mb-4 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ item.name }}</h5>
+                                    <p class="card-text">Price: Rs {{ item.price }}</p>
+                                    {% if item.inventory_managed %}
+                                        <p>Stock: {{ item.stock_quantity }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p>No items available for this category.</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

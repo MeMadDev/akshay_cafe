@@ -1,0 +1,125 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Bill - Cafe Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Select2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #343a40;
+            color: white;
+        }
+        .billing-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .billing-container h2 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" >
+            <img src="{% static 'logo.jpeg' %}" alt="Cafe Logo"  onclick="window.location.href='{% url 'home' %}'" height="40">
+        </a>
+        <div class="ml-auto">
+            <button class="btn btn-primary ml-2" onclick="window.location.href='{% url 'previous_bills' %}'">Bills</button>
+            <button class="btn btn-danger ml-2" onclick="window.location.href='{% url 'logout' %}'">Logout</button>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="billing-container">
+            <h2 class="text-center">Create Bill</h2>
+            <!-- Display error message at the top if it exists -->
+            {% if error_message %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error_message }}
+                </div>
+            {% endif %}
+            <form method="POST" action="{% url 'create_bill' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="customer_name">Customer Name:</label>
+                    <input type="text" id="customer_name" name="customer_name" class="form-control" placeholder="Enter customer name" required>
+                </div>
+                <div id="items-container">
+                    <div class="item-group form-group">
+                        <label for="item">Add Item:</label>
+                        <select name="items" class="form-control item-select">
+                            {% for item in items %}
+                                <option value="{{ item.id }}">{{ item.name }} - {{ item.price }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="quantity">Quantity:</label>
+                        <input type="number" name="quantities" class="form-control" min="1" value="1" required>
+                    </div>
+                </div>
+                 <!-- New fields for extra items and extra amount -->
+                 <div class="form-group mt-3">
+                    <label for="extra_items">Extra Items:</label>
+                    <textarea id="extra_items" name="extra_items" class="form-control" placeholder="Describe any extra items (optional)"></textarea>
+                </div>
+                <div class="form-group mt-3">
+                    <label for="extra_amount">Extra Amount (Rs):</label>
+                    <input type="number" id="extra_amount" name="extra_amount" class="form-control" min="0" step="0.01" placeholder="Enter extra amount (optional)">
+                </div>
+                <div class="d-flex justify-content-between mt-3">
+                    <button type="button" id="add-item-btn" class="btn btn-secondary mr-2">Add Another Item</button>
+                    <button type="submit" class="btn btn-primary">Finalize Bill</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 for the first item
+            $('.item-select').select2();
+
+            // Clone the item group when "Add Another Item" button is clicked
+            document.getElementById('add-item-btn').addEventListener('click', function() {
+                var container = document.getElementById('items-container');
+                var newItemGroup = container.querySelector('.item-group').cloneNode(true);
+
+                // Remove any previous Select2 initialization
+                $(newItemGroup).find('.select2-container').remove();
+
+                // Append the new item group to the container
+                container.appendChild(newItemGroup);
+
+                // Find the newly added select element
+                var newSelect = $(newItemGroup).find('.item-select');
+
+                // Remove the existing Select2 initialization
+                newSelect.removeClass('select2-hidden-accessible');
+                newSelect.next('.select2').remove();
+
+                // Generate a unique ID for the new select element
+                var newId = 'item-select-' + Math.random().toString(36).substr(2, 9);
+                newSelect.attr('id', newId);
+
+                // Initialize Select2 for the new select element
+                newSelect.select2();
+            });
+        });
+    </script>
+</body>
+</html>
